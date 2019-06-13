@@ -1,6 +1,3 @@
-import sys
-sys.path.append('/home/gz/PycharmProjects/PokerNoLimit/venv/lib/python3.5/site-packages/deuces/')
-
 from PokerProbabilities import PokerBot
 from SidePot import SidePot
 from deuces import Card
@@ -46,24 +43,30 @@ class Player:
         if self.name == "Me":
             print("Pot size: " + str(pot_size) + "  To Call: " + str(to_call_amount))
             decision = int(input("Fold: 0, Check: 1, Call: 2, Raise: 3, All in: 4\n"))
-
-            if decision == 0:
-                return [self.fold(), 0]
-            elif decision == 1:
-                if to_call_amount > 0:
-                    return [self.fold(), 0]
-                return[self.check(), 0]
-            elif decision == 2:
-                self.lastAction = to_call_amount - self.singleRoundMoneyInThePot
-                return[self.call(to_call_amount), to_call_amount-self.singleRoundMoneyInThePot]
-            elif decision == 3:
+            if decision == 3:
                 bet = int(input("Raise to: "))
-                self.lastAction = bet - self.singleRoundMoneyInThePot
-                return[self.bet(bet), self.lastAction]
-            elif decision == 4:
-                return[self.go_all_in(), self.lastAction]
         else:
-            return self.pokerBot.handle_preflop()
+            self.pokerBot.stack = self.stack
+            self.pokerBot.hand = self.hand
+            self.pokerBot.board = board
+            decision = self.pokerBot.handle_preflop()
+            if decision == 3:
+                bet = self.pokerBot.bet
+        if decision == 0:
+            return [self.fold(), 0]
+        elif decision == 1:
+            if to_call_amount > 0:
+                return [self.fold(), 0]
+            return[self.check(), 0]
+        elif decision == 2:
+            self.lastAction = to_call_amount - self.singleRoundMoneyInThePot
+            return[self.call(to_call_amount), to_call_amount-self.singleRoundMoneyInThePot]
+        elif decision == 3:
+            self.lastAction = bet - self.singleRoundMoneyInThePot
+            return[self.bet(bet), self.lastAction]
+        elif decision == 4:
+            return[self.go_all_in(), self.lastAction]
+
 
     def fold(self):
         self.finish_betting()
@@ -383,6 +386,7 @@ class Table:
             self.pot = 0
             self.done = True
             print("Player " + self.playerList[index].name + " takes the pot.")
+        self.board.clear()
 
     def get_number_of_turns_left(self):
         return self.roundList.count(1)
@@ -397,7 +401,7 @@ class Table:
                 self.roundList.append(1)
         else:
             for i in range(self.n_players):
-                if self.playerStackList[i] > 0:
+                if self.playerList[i].stack > 0:
                     self.playerList[i].hand = deck.draw(2)
                     self.roundList[i] = 1
                 else:
@@ -436,6 +440,11 @@ class Table:
             self.playerList[self.button + 2].set_big_blind(self.big_blind)
         self.update_pot(self.small_blind + self.big_blind)
         self.toCall = self.big_blind
+        for i in range(self.n_players):
+            index = self.button + i
+            while index >=self.n_players:
+                index -= self.n_players
+            self.playerList[index].distanceFromButton = i
 
     def rotate_button(self):
         self.button += 1
@@ -455,6 +464,11 @@ class Table:
             self.playerList[self.button + 2].set_big_blind(self.big_blind)
         self.update_pot(self.small_blind + self.big_blind)
         self.toCall = self.big_blind
+        for i in range(self.n_players):
+            index = self.button + i
+            while index >=self.n_players:
+                index -= self.n_players
+            self.playerList[index].distanceFromButton = i
 
     # visual functions
     def get_player_hands(self):
@@ -467,6 +481,7 @@ class Table:
         list_of_stack_sizes = []
         for player in self.playerList:
             list_of_stack_sizes.append([player.get_stack_size(), player.name])
+        self.playerStackList = list_of_stack_sizes
         return list_of_stack_sizes
 
     def give_winnings(self):
@@ -544,14 +559,16 @@ def main():
         for hand in game.get_player_hands():
             print("Player " + str(hand[1]))
             Card.print_pretty_cards(hand[0])
-            print("rank: " + str(Card.get_rank_int(hand[0][0])))
-            print("suit: " + str(Card.get_suit_int(hand[0][0])))
-            print("rank: " + str(Card.get_rank_int(hand[0][1])))
-            print("suit: " + str(Card.get_suit_int(hand[0][1])))
+            # print("rank: " + str(Card.get_rank_int(hand[0][0])))
+            # print("suit: " + str(Card.get_suit_int(hand[0][0])))
+            # print("rank: " + str(Card.get_rank_int(hand[0][1])))
+            # print("suit: " + str(Card.get_suit_int(hand[0][1])))
 
         for s, stack in enumerate(game.get_player_stack_sizes()):
             print("Stack for " + str(stack[1]) + " is " + str(stack[0]))
-
+        for player in game.playerList:
+            if player.name != "Me":
+                player.pokerBot.stackList = game.playerStackList
         game.start_round()
 
         for i in range(game.n_players):
@@ -559,6 +576,7 @@ def main():
 
         if game.done:
             game.done = False
+            game.board.clear()
             continue
 
         game.deal_flop(deck)
@@ -567,6 +585,9 @@ def main():
             print("Stack for " + str(stack[1]) + " is " + str(stack[0]))
         game.toCall = 0
 
+        for player in game.playerList:
+            if player.name != "Me":
+                player.pokerBot.stackList = game.playerStackList
         game.start_round()
 
         for i in range(game.n_players):
@@ -574,6 +595,7 @@ def main():
 
         if game.done:
             game.done = False
+            game.board.clear()
             continue
 
         game.deal_turn(deck)
@@ -582,12 +604,17 @@ def main():
         for n, stack in enumerate(game.get_player_stack_sizes()):
             print("Stack for " + str(stack[1]) + " is " + str(stack[0]))
 
+        for player in game.playerList:
+            if player.name != "Me":
+                player.pokerBot.stackList = game.playerStackList
+
         game.start_round()
         for i in range(game.n_players):
             game.playerList[i].singleRoundMoneyInThePot = 0
 
         if game.done:
             game.done = False
+            game.board.clear()
             continue
 
         game.deal_river(deck)
@@ -595,6 +622,10 @@ def main():
 
         for n, stack in enumerate(game.get_player_stack_sizes()):
             print("Stack for " + str(stack[1]) + " is " + str(stack[0]))
+
+        for player in game.playerList:
+            if player.name != "Me":
+                player.pokerBot.stackList = game.playerStackList
 
         game.start_round()
 
@@ -615,6 +646,7 @@ def main():
             game.playerList[m].n_players = game.n_players
 
         if game.done:
+            game.board.clear()
             game.done = False
             continue
 

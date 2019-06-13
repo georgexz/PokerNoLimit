@@ -1,5 +1,3 @@
-import sys
-sys.path.append('/home/gz/PycharmProjects/PokerNoLimit/venv/lib/python3.5/site-packages/deuces/')
 import operator as op
 from functools import reduce
 from deuces import Card
@@ -11,7 +9,7 @@ import math
 class PokerBot:
     board = []
     stackList = []
-
+    bet = 0
 
     def __init__(self, hand, stack):
         self.hand = hand
@@ -51,13 +49,15 @@ class PokerBot:
         return math.ceil(score)
 
     def flop(self):
-
+        return
     def turn(self):
-
+        return
     def river(self):
-
+        return
     def handle_preflop(self):
         strength = self.preflop()
+        return 0
+
 
 class PokerProbabilities:
     @staticmethod
