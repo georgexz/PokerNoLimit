@@ -1,6 +1,7 @@
 import sys
 sys.path.append('/home/gz/PycharmProjects/PokerNoLimit/venv/lib/python3.5/site-packages/deuces/')
-
+import operator as op
+from functools import reduce
 from deuces import Card
 from deuces import Deck
 from deuces import Evaluator
@@ -114,4 +115,9 @@ class PokerProbabilities:
             return False
 
     @staticmethod
-    def nCr(n, r):
+    def n_choose_r(n, r):
+        r = min(r, n - r)
+        numerator = reduce(op.mul, range(n, n - r, -1), 1)
+        denominator = reduce(op.mul, range(1, r + 1), 1)
+        return numerator / denominator
+    
