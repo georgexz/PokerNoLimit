@@ -6,6 +6,7 @@ from deuces import Evaluator
 import numpy as np
 import math
 import itertools
+import random
 
 class PokerBot:
     board = []
@@ -13,6 +14,8 @@ class PokerBot:
     bet = 0
     pot = 0
     side_pots = []
+    to_call = 0
+    actions = []
 
     def __init__(self, hand, stack):
         self.hand = hand
@@ -52,6 +55,9 @@ class PokerBot:
         return math.ceil(score)
 
     def flop(self):
+        # check for pairs
+
+
         return
     def turn(self):
         return
@@ -59,7 +65,25 @@ class PokerBot:
         return
     def handle_preflop(self):
         strength = self.preflop()
-        return 0
+        if strength >= 12:
+            if self.to_call <= 8:
+                if self.stack > 50:
+                    self.bet = random.randrange(10, 15)
+                    return 3
+                else:
+                    return 4
+            else:
+                return 2
+        elif strength > 7:
+            if self.to_call < self.stack/5:
+                return 2
+            else:
+                return 0
+        else:
+            if self.to_call < 4 and self.stack > self.to_call*10:
+                return 1
+            else:
+                return 0
 
 
 class PokerProbabilities:

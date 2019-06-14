@@ -15,6 +15,7 @@ class Player:
     lastAction = 0
     pot_size = 0
     side_pots = []
+    actions = []
 
     def __init__(self, hand, stack, name, n_players):
         self.hand = hand
@@ -41,7 +42,8 @@ class Player:
         self.singleRoundMoneyInThePot += self.lastAction
         self.lastAction = 0
 
-    def action(self, pot_size, to_call_amount, board):
+    def action(self, pot_size, to_call_amount, board, actions):
+        self.actions = actions
         if self.name == "Me":
             print("Pot size: " + str(pot_size) + "  To Call: " + str(to_call_amount))
             decision = int(input("Fold: 0, Check: 1, Call: 2, Raise: 3, All in: 4\n"))
@@ -53,6 +55,8 @@ class Player:
             self.pokerBot.board = board
             self.pokerBot.pot = self.pot_size
             self.pokerBot.side_pots = self.side_pots
+            self.pokerBot.to_call = to_call_amount
+            self.pokerBot.actions = actions
             decision = self.pokerBot.handle_preflop()
             if decision == 3:
                 bet = self.pokerBot.bet
@@ -135,6 +139,7 @@ class Table:
     sidePots = []
     toCall = 0
     done = False
+    actions = []
 
     def __init__(self, n_players, small_blind, big_blind, ante):
         self.n_players = n_players
@@ -189,7 +194,8 @@ class Table:
                     for s in self.sidePots:
                         if s.playerList[index] != 1 or s.playerList[index] != -2:
                             self.playerList[index].side_pots.append(s.sidePot)
-                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board)
+                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
+                    self.actions.append(player_action)
                     index = self.round_continuation(index, player_action)
                 else:
                     print("Player " + self.playerList[index].name + "'s turn.\n")
@@ -197,7 +203,8 @@ class Table:
                     for s in self.sidePots:
                         if s.playerList[index] != 1 or s.playerList[index] != -2:
                             self.playerList[index].side_pots.append(s.sidePot)
-                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board)
+                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
+                    self.actions.append(player_action)
                     index = self.round_continuation(index, player_action)
 
         # after preflop
@@ -225,7 +232,8 @@ class Table:
                     for s in self.sidePots:
                         if s.playerList[index] != 1 or s.playerList[index] != -2:
                             self.playerList[index].side_pots.append(s.sidePot)
-                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board)
+                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
+                    self.actions.append(player_action)
                     index = self.round_continuation(index, player_action)
                 else:
                     print("Player " + self.playerList[index].name + "'s turn.\n")
@@ -233,7 +241,8 @@ class Table:
                     for s in self.sidePots:
                         if s.playerList[index] != 1 or s.playerList[index] != -2:
                             self.playerList[index].side_pots.append(s.sidePot)
-                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board)
+                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
+                    self.actions.append(player_action)
                     index = self.round_continuation(index, player_action)
 
         # end of betting in preflop
@@ -590,7 +599,7 @@ def main():
             if player.name != "Me":
                 player.pokerBot.stackList = game.playerStackList
         game.start_round()
-
+        game.actions.clear()
         for i in range(game.n_players):
             game.playerList[i].singleRoundMoneyInThePot = 0
 
@@ -609,6 +618,7 @@ def main():
             if player.name != "Me":
                 player.pokerBot.stackList = game.playerStackList
         game.start_round()
+        game.actions.clear()
 
         for i in range(game.n_players):
             game.playerList[i].singleRoundMoneyInThePot = 0
@@ -629,6 +639,8 @@ def main():
                 player.pokerBot.stackList = game.playerStackList
 
         game.start_round()
+        game.actions.clear()
+
         for i in range(game.n_players):
             game.playerList[i].singleRoundMoneyInThePot = 0
 
@@ -648,6 +660,7 @@ def main():
                 player.pokerBot.stackList = game.playerStackList
 
         game.start_round()
+        game.actions.clear()
 
         game.give_winnings()
 
