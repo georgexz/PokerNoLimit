@@ -5,11 +5,14 @@ from deuces import Deck
 from deuces import Evaluator
 import numpy as np
 import math
+import itertools
 
 class PokerBot:
     board = []
     stackList = []
     bet = 0
+    pot = 0
+    side_pots = []
 
     def __init__(self, hand, stack):
         self.hand = hand
@@ -35,15 +38,15 @@ class PokerBot:
                 score = 5
         if Card.get_suit_int(self.hand[0]) == Card.get_suit_int(self.hand[1]):
             score += 2
-        if abs(Card.get_rank_int(self.hand[0]) - Card.get_rank_int(self.hand[1])) == 1:
+        if abs(Card.get_rank_int(self.hand[0]) - Card.get_rank_int(self.hand[1])) == 2:
             score -= 1
-        elif abs(Card.get_rank_int(self.hand[0]) - Card.get_rank_int(self.hand[1])) == 2:
-            score -= 2
         elif abs(Card.get_rank_int(self.hand[0]) - Card.get_rank_int(self.hand[1])) == 3:
+            score -= 2
+        elif abs(Card.get_rank_int(self.hand[0]) - Card.get_rank_int(self.hand[1])) == 4:
             score -= 4
-        elif abs(Card.get_rank_int(self.hand[0]) - Card.get_rank_int(self.hand[1])) >= 4:
+        elif abs(Card.get_rank_int(self.hand[0]) - Card.get_rank_int(self.hand[1])) >= 5:
             score -= 5
-        if abs(Card.get_rank_int(self.hand[0]) - Card.get_rank_int(self.hand[1])) <= 1 \
+        if abs(Card.get_rank_int(self.hand[0]) - Card.get_rank_int(self.hand[1])) <= 2 \
                 and highest_card < 10:
             score += 1
         return math.ceil(score)
@@ -120,4 +123,4 @@ class PokerProbabilities:
         numerator = reduce(op.mul, range(n, n - r, -1), 1)
         denominator = reduce(op.mul, range(1, r + 1), 1)
         return numerator / denominator
-    
+

@@ -13,6 +13,8 @@ class Player:
     startingStackSize = 0
     singleRoundMoneyInThePot = 0
     lastAction = 0
+    pot_size = 0
+    side_pots = []
 
     def __init__(self, hand, stack, name, n_players):
         self.hand = hand
@@ -49,6 +51,8 @@ class Player:
             self.pokerBot.stack = self.stack
             self.pokerBot.hand = self.hand
             self.pokerBot.board = board
+            self.pokerBot.pot = self.pot_size
+            self.pokerBot.side_pots = self.side_pots
             decision = self.pokerBot.handle_preflop()
             if decision == 3:
                 bet = self.pokerBot.bet
@@ -181,10 +185,18 @@ class Table:
                 if index >= self.n_players:
                     index = index - self.n_players
                     print("Player " + self.playerList[index].name + "'s turn.\n")
+                    self.playerList[index].pot_size = self.pot
+                    for s in self.sidePots:
+                        if s.playerList[index] != 1 or s.playerList[index] != -2:
+                            self.playerList[index].side_pots.append(s.sidePot)
                     player_action = self.playerList[index].action(self.pot, self.toCall, self.board)
                     index = self.round_continuation(index, player_action)
                 else:
                     print("Player " + self.playerList[index].name + "'s turn.\n")
+                    self.playerList[index].pot_size = self.pot
+                    for s in self.sidePots:
+                        if s.playerList[index] != 1 or s.playerList[index] != -2:
+                            self.playerList[index].side_pots.append(s.sidePot)
                     player_action = self.playerList[index].action(self.pot, self.toCall, self.board)
                     index = self.round_continuation(index, player_action)
 
@@ -209,10 +221,18 @@ class Table:
                 if index >= self.n_players:
                     index = index - self.n_players
                     print("Player " + self.playerList[index].name + "'s turn.\n")
+                    self.playerList[index].pot_size = self.pot
+                    for s in self.sidePots:
+                        if s.playerList[index] != 1 or s.playerList[index] != -2:
+                            self.playerList[index].side_pots.append(s.sidePot)
                     player_action = self.playerList[index].action(self.pot, self.toCall, self.board)
                     index = self.round_continuation(index, player_action)
                 else:
                     print("Player " + self.playerList[index].name + "'s turn.\n")
+                    self.playerList[index].pot_size = self.pot
+                    for s in self.sidePots:
+                        if s.playerList[index] != 1 or s.playerList[index] != -2:
+                            self.playerList[index].side_pots.append(s.sidePot)
                     player_action = self.playerList[index].action(self.pot, self.toCall, self.board)
                     index = self.round_continuation(index, player_action)
 
