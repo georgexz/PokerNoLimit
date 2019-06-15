@@ -56,9 +56,53 @@ class PokerBot:
 
     def flop(self):
         # check for pairs
+        strength = 0
+        pairs = []
+        board_pairs = []
+        for c in itertools.combinations(self.hand + self.board, 2):
+            if PokerProbabilities.same_rank(c):
+                pairs.append(Card.get_rank_int(c[0]))
+        for cb in itertools.combinations(self.hand + self.board, 2):
+            if PokerProbabilities.same_rank(cb):
+                board_pairs.append(Card.get_rank_int(cb[0]))
+        board_three = -1
+        if PokerProbabilities.same_rank(self.board):
+            board_three = Card.get_rank_int(self.board[0])
+        three_of_a_kind = -1
+        for ci in itertools.combinations(self.hand + self.board, 3):
+            if PokerProbabilities.same_rank(ci):
+                three_of_a_kind = Card.get_rank_int(ci[0])
+        four_of_a_kind = -1
+        if PokerProbabilities.same_rank(self.hand):
+            for cf in itertools.combinations(self.board, 2):
+                if PokerProbabilities.same_rank(cf):
+                    if Card.get_rank_int(cf[0]) == Card.get_rank_int(self.hand[0]):
+                        four_of_a_kind = Card.get_rank_int(cf[0])
+
+        if four_of_a_kind != -1:
+            strength = 10
+            return strength
+        if four_of_a_kind == -1 and three_of_a_kind != -1:
+            strength = 8
+            return strength
+
+        if board_three == -1 and three_of_a_kind == -1 and pairs:
+            pairs.sort(reverse=True)
+            # if pairs are in your hand
+            for s in self.hand:
+                for i, p in enumerate(pairs):
+                    if Card.get_rank_int(s) == p:
+                        if i == 0:
+                            if p >= PokerProbabilities.highest_card(self.board):
+                                strength += 5  # likely top pair
+                            else:
+                                strength += 4  # low pair
+                        if i == 1:
+                            strength += 2  # two pair
+            return strength
+        # contemplate three of a kind possibilities for other players affecting strength of your hand
 
 
-        return
     def turn(self):
         return
     def river(self):
@@ -87,6 +131,13 @@ class PokerBot:
 
 
 class PokerProbabilities:
+    @staticmethod
+    def highest_card(cards):
+        rank = Card.get_rank_int(cards[0])
+        for card in cards:
+            if rank > Card.get_rank_int(card):
+                rank = Card.get_rank_int(card)
+        return rank
     @staticmethod
     def is_straight(cards):
         ranks = []
