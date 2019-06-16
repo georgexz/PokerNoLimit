@@ -57,7 +57,14 @@ class Player:
             self.pokerBot.side_pots = self.side_pots
             self.pokerBot.to_call = to_call_amount
             self.pokerBot.actions = actions
-            decision = self.pokerBot.handle_preflop()
+            if not board:
+                decision = self.pokerBot.handle_preflop()
+            if len(board) == 3:
+                decision = self.pokerBot.handle_flop()
+            if len(board) == 4:
+                decision = self.pokerBot.handle_turn()
+            if len(board) == 5:
+                decision = self.pokerBot.handle_river()
             if decision == 3:
                 bet = self.pokerBot.bet
         if decision == 0:
@@ -67,13 +74,20 @@ class Player:
                 return [self.fold(), 0]
             return[self.check(), 0]
         elif decision == 2:
+            if to_call_amount == 0:
+                return [self.check(), 0]
             self.lastAction = to_call_amount - self.singleRoundMoneyInThePot
+            if self.lastAction > self.stack:
+                return [self.go_all_in(), self.lastAction]
             return[self.call(to_call_amount), to_call_amount-self.singleRoundMoneyInThePot]
         elif decision == 3:
             self.lastAction = bet - self.singleRoundMoneyInThePot
             return[self.bet(bet), self.lastAction]
         elif decision == 4:
+            print("last action before update: " + str(self.lastAction))
             return[self.go_all_in(), self.lastAction]
+        else:
+            return [-1,-1]
 
 
     def fold(self):
@@ -85,11 +99,9 @@ class Player:
 
     def call(self, bet_size):
         amount = bet_size - self.singleRoundMoneyInThePot
-        if amount < self.stack:
-            self.stack = self.stack - amount
-            return 2
-        else:
-            return self.go_all_in()
+        self.stack = self.stack - amount
+        return 2
+
 
     def bet(self, bet_size):
         amount = bet_size - self.singleRoundMoneyInThePot
@@ -101,6 +113,7 @@ class Player:
 
     def go_all_in(self):
         self.lastAction = self.stack
+        print("last action after all in: " + str(self.lastAction))
         self.stack = 0
         return 4
 
@@ -312,6 +325,7 @@ class Table:
             self.sidePots[i].pot_add = self.sidePots[i].to_call - self.sidePots[i+1].to_call
 
     def check_side_pots(self, player_i, player_action):
+        print(player_action)
         # fold
         if player_action[0] == 0:
             for n,x in enumerate(self.sidePots):
@@ -401,6 +415,11 @@ class Table:
                                                                   .singleRoundMoneyInThePot)), self.roundList,
                                                  self.toCall))
                     self.sidePots[-1].playerList[player_i] = -2
+                    sum = 0
+                    for s in self.sidePots:
+                        sum += s.sidePot
+                    if self.pot - sum > 0:
+                        self.sidePots.append(SidePot(self.pot - sum, self.roundList, 0))
                     self.update_side_pots()
 
     def no_bets(self):
@@ -415,7 +434,7 @@ class Table:
             self.pot = 0
             self.done = True
             print("Player " + self.playerList[index].name + " takes the pot.")
-        self.board.clear()
+            self.board.clear()
 
     def get_number_of_turns_left(self):
         return self.roundList.count(1)
@@ -567,7 +586,7 @@ def main():
         game.playerNames.append(input("Name: "))
         game.set_player_stack(stack_size)
 
-    for n in range(15):
+    for n in range(100):
         if len(game.playerList) == 1:
             print()
             print("Winner is " + game.playerList[0].name)
@@ -662,6 +681,14 @@ def main():
         game.start_round()
         game.actions.clear()
 
+        for i in range(game.n_players):
+            game.playerList[i].singleRoundMoneyInThePot = 0
+
+        if game.done:
+            game.done = False
+            game.board.clear()
+            continue
+
         game.give_winnings()
 
         for n, stack in enumerate(game.get_player_stack_sizes()):
@@ -674,6 +701,7 @@ def main():
                         ax = x
                         break
                 game.playerList.remove(ax)
+                game.roundList.pop(n)
                 game.n_players -= 1
         for m in range(game.n_players):
             game.playerList[m].n_players = game.n_players
