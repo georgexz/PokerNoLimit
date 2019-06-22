@@ -55,13 +55,11 @@ class Table:
         # preflop
         if self.justBegun:
             self.justBegun = False
-            index = self.button + 3
+            index = (self.button + 3) % self.n_players
             while self.get_number_of_turns_left() > 0:
                 if self.roundList.count(-1) == self.n_players - 1:
                     self.no_bets()
                     break
-                while index >= self.n_players:
-                    index = index - self.n_players
                 print("Player " + self.playerList[index].name + "'s turn.\n")
                 self.playerList[index].pot_size = self.pot
                 for s in self.sidePots:
@@ -72,10 +70,10 @@ class Table:
                 index = self.round_continuation(index, player_action)
         # after preflop
         else:
-            index = self.button + 1
+            index = (self.button + 1) % self.n_players
             next_index = self.button
             while self.get_number_of_turns_left() >= 1:
-                next_index += 1
+                next_index = (next_index + 1) % len(self.roundList)
                 while next_index >= len(self.roundList):
                     print("next_index: " + str(next_index))
                     print("length of roundList: " + str(len(self.roundList)))
@@ -88,8 +86,6 @@ class Table:
                 if self.roundList.count(-1) == self.n_players - 1:
                     self.no_bets()
                     break
-                while index >= self.n_players:
-                    index = index - self.n_players
 
                 print("Player " + self.playerList[index].name + "'s turn.\n")
                 self.playerList[index].pot_size = self.pot
