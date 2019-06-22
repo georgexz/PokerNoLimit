@@ -21,7 +21,7 @@ class PokerBot:
         self.hand = hand
         self.stack = stack
 
-    #ranks hand strength with chen formula
+    # ranks hand strength with chen formula
     def preflop(self):
         score = 0
         highest_card = max(Card.get_rank_int(self.hand[0]), Card.get_rank_int(self.hand[1]))
@@ -273,12 +273,12 @@ class PokerBot:
             if self.to_call < self.stack/5:
                 return 2
             else:
-                return 0
+                return 1
         else:
             if self.to_call < 4 and self.stack > self.to_call*10:
                 return 1
             else:
-                return 0
+                return 1
 
     def handle_flop(self):
         strength = self.flop()

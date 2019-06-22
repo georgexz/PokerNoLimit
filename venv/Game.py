@@ -70,7 +70,7 @@ class Player:
         if decision == 0:
             return [self.fold(), 0]
         elif decision == 1:
-            if to_call_amount > 0:
+            if to_call_amount - self.singleRoundMoneyInThePot > 0:
                 return [self.fold(), 0]
             return[self.check(), 0]
         elif decision == 2:
