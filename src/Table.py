@@ -74,10 +74,6 @@ class Table:
             next_index = self.button
             while self.get_number_of_turns_left() >= 1:
                 next_index = (next_index + 1) % len(self.roundList)
-                while next_index >= len(self.roundList):
-                    print("next_index: " + str(next_index))
-                    print("length of roundList: " + str(len(self.roundList)))
-                    next_index -= len(self.roundList)
                 if self.roundList[next_index] == 1:
                     index = next_index
                     break
@@ -273,6 +269,7 @@ class Table:
             self.done = True
             print("Player " + self.playerList[index].name + " takes the pot.")
             self.board.clear()
+            self.check_stacks()
 
     def get_number_of_turns_left(self):
         return self.roundList.count(1)
@@ -370,6 +367,22 @@ class Table:
         self.playerStackList = list_of_stack_sizes
         return list_of_stack_sizes
 
+    def check_stacks(self):
+        for n, stack in enumerate(self.get_player_stack_sizes()):
+            print("Stack for " + str(stack[1]) + " is " + str(stack[0]))
+            if stack[0] <= 0:
+                print("Player " + str(stack[1]) + " is gone.")
+                ax = self.playerList[0]
+                for x in self.playerList:
+                    if x.name == stack[1]:
+                        ax = x
+                        break
+                self.playerList.remove(ax)
+                self.roundList.pop(n)
+                self.n_players -= 1
+        for m in range(self.n_players):
+            self.playerList[m].n_players = self.n_players
+
     def give_winnings(self):
         evaluated_hands = []
         evaluator = Evaluator()
@@ -408,3 +421,4 @@ class Table:
             print()
             print(self.playerList[best_index].name + " takes the pot.")
             self.pot = 0
+        self.check_stacks()

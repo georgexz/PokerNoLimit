@@ -119,21 +119,6 @@ def main():
 
         game.give_winnings()
 
-        for n, stack in enumerate(game.get_player_stack_sizes()):
-            print("Stack for " + str(stack[1]) + " is " + str(stack[0]))
-            if stack[0] == 0:
-                print("Player " + str(stack[1]) + " is gone.")
-                ax = game.playerList[0]
-                for x in game.playerList:
-                    if x.name == stack[1]:
-                        ax = x
-                        break
-                game.playerList.remove(ax)
-                game.roundList.pop(n)
-                game.n_players -= 1
-        for m in range(game.n_players):
-            game.playerList[m].n_players = game.n_players
-
         if game.done:
             game.board.clear()
             game.done = False
