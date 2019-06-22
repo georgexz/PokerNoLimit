@@ -45,6 +45,9 @@ class Printer:
 		return '\n'  + round_str + '\n' + self.playerPadding(player_str,self.getPadding(player_str,0.0)) + '\n' + '\n'.join(rows) + '\n'*2
 
 
+	def check(self):
+		print("hey")
+
 if __name__ == "__main__":
 	from treys import Card
 
