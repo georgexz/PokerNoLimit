@@ -34,7 +34,7 @@ def main():
         # testing preflop cards
         for hand in game.get_player_hands():
             print("Player " + str(hand[1]))
-            Card.print_pretty_cards(hand[0])
+            print(Card.print_pretty_cards(hand[0]))
             # print("rank: " + str(Card.get_rank_int(hand[0][0])))
             # print("suit: " + str(Card.get_suit_int(hand[0][0])))
             # print("rank: " + str(Card.get_rank_int(hand[0][1])))

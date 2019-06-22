@@ -300,15 +300,15 @@ class Table:
     # dealing to the board
     def deal_flop(self, deck):
         self.board = deck.draw(3)
-        Card.print_pretty_cards(self.board)
+        print(Card.print_pretty_cards(self.board))
 
     def deal_turn(self, deck):
         self.board.append(deck.draw(1))
-        Card.print_pretty_cards(self.board)
+        print(Card.print_pretty_cards(self.board))
 
     def deal_river(self, deck):
         self.board.append(deck.draw(1))
-        Card.print_pretty_cards(self.board)
+        print(Card.print_pretty_cards(self.board))
 
     def clear_cards(self):
         self.board.clear()
