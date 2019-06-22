@@ -60,26 +60,16 @@ class Table:
                 if self.roundList.count(-1) == self.n_players - 1:
                     self.no_bets()
                     break
-                if index >= self.n_players:
+                while index >= self.n_players:
                     index = index - self.n_players
-                    print("Player " + self.playerList[index].name + "'s turn.\n")
-                    self.playerList[index].pot_size = self.pot
-                    for s in self.sidePots:
-                        if s.playerList[index] != 1 or s.playerList[index] != -2:
-                            self.playerList[index].side_pots.append(s.sidePot)
-                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
-                    self.actions.append(player_action)
-                    index = self.round_continuation(index, player_action)
-                else:
-                    print("Player " + self.playerList[index].name + "'s turn.\n")
-                    self.playerList[index].pot_size = self.pot
-                    for s in self.sidePots:
-                        if s.playerList[index] != 1 or s.playerList[index] != -2:
-                            self.playerList[index].side_pots.append(s.sidePot)
-                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
-                    self.actions.append(player_action)
-                    index = self.round_continuation(index, player_action)
-
+                print("Player " + self.playerList[index].name + "'s turn.\n")
+                self.playerList[index].pot_size = self.pot
+                for s in self.sidePots:
+                    if s.playerList[index] != 1 or s.playerList[index] != -2:
+                        self.playerList[index].side_pots.append(s.sidePot)
+                player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
+                self.actions.append(player_action)
+                index = self.round_continuation(index, player_action)
         # after preflop
         else:
             index = self.button + 1
@@ -98,25 +88,17 @@ class Table:
                 if self.roundList.count(-1) == self.n_players - 1:
                     self.no_bets()
                     break
-                if index >= self.n_players:
+                while index >= self.n_players:
                     index = index - self.n_players
-                    print("Player " + self.playerList[index].name + "'s turn.\n")
-                    self.playerList[index].pot_size = self.pot
-                    for s in self.sidePots:
-                        if s.playerList[index] != 1 or s.playerList[index] != -2:
-                            self.playerList[index].side_pots.append(s.sidePot)
-                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
-                    self.actions.append(player_action)
-                    index = self.round_continuation(index, player_action)
-                else:
-                    print("Player " + self.playerList[index].name + "'s turn.\n")
-                    self.playerList[index].pot_size = self.pot
-                    for s in self.sidePots:
-                        if s.playerList[index] != 1 or s.playerList[index] != -2:
-                            self.playerList[index].side_pots.append(s.sidePot)
-                    player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
-                    self.actions.append(player_action)
-                    index = self.round_continuation(index, player_action)
+
+                print("Player " + self.playerList[index].name + "'s turn.\n")
+                self.playerList[index].pot_size = self.pot
+                for s in self.sidePots:
+                    if s.playerList[index] != 1 or s.playerList[index] != -2:
+                        self.playerList[index].side_pots.append(s.sidePot)
+                player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
+                self.actions.append(player_action)
+                index = self.round_continuation(index, player_action)
 
         # end of betting in preflop
         for n, i in enumerate(self.roundList):
