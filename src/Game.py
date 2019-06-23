@@ -14,7 +14,7 @@ def main():
         game.playerNames.append(input("Name: "))
         game.set_player_stack(stack_size)
 
-    for n in range(100):
+    for n in range(512):
         if len(game.playerList) == 1:
             print()
             print("Winner is " + game.playerList[0].name)
@@ -60,6 +60,7 @@ def main():
             continue
 
         if game.speedRun:
+            game.speedRun = False
             game.deal_flop(deck)
             game.deal_turn(deck)
             game.deal_river(deck)
@@ -87,6 +88,7 @@ def main():
             game.board.clear()
             continue
         if game.speedRun:
+            game.speedRun = False
             game.deal_turn(deck)
             game.deal_river(deck)
             game.give_winnings()
@@ -115,6 +117,7 @@ def main():
             continue
 
         if game.speedRun:
+            game.speedRun = False
             game.deal_river(deck)
             game.give_winnings()
             game.board.clear()
