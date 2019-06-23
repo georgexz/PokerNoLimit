@@ -24,6 +24,7 @@ def main():
         print()
         deck.GetFullDeck()
         deck.shuffle()
+        game.justBegun = True
         # pot has small blind and big blind and ante
         game.deal_preflop(deck)
         if n == 0:
@@ -31,10 +32,13 @@ def main():
         else:
             game.rotate_button()
 
-        # testing preflop cards
         for hand in game.get_player_hands():
-            print("Player " + str(hand[1]))
-            print(Card.print_pretty_cards(hand[0]))
+            if hand[1] == "Me":
+                print(Card.print_pretty_cards(hand[0]))
+        # testing preflop cards
+        # for hand in game.get_player_hands():
+        #     print("Player " + str(hand[1]))
+        #     print(Card.print_pretty_cards(hand[0]))
             # print("rank: " + str(Card.get_rank_int(hand[0][0])))
             # print("suit: " + str(Card.get_suit_int(hand[0][0])))
             # print("rank: " + str(Card.get_rank_int(hand[0][1])))
@@ -52,6 +56,14 @@ def main():
 
         if game.done:
             game.done = False
+            game.board.clear()
+            continue
+
+        if game.speedRun:
+            game.deal_flop(deck)
+            game.deal_turn(deck)
+            game.deal_river(deck)
+            game.give_winnings()
             game.board.clear()
             continue
 
@@ -74,6 +86,12 @@ def main():
             game.done = False
             game.board.clear()
             continue
+        if game.speedRun:
+            game.deal_turn(deck)
+            game.deal_river(deck)
+            game.give_winnings()
+            game.board.clear()
+            continue
 
         game.deal_turn(deck)
         game.toCall = 0
@@ -93,6 +111,12 @@ def main():
 
         if game.done:
             game.done = False
+            game.board.clear()
+            continue
+
+        if game.speedRun:
+            game.deal_river(deck)
+            game.give_winnings()
             game.board.clear()
             continue
 
