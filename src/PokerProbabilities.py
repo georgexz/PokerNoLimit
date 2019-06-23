@@ -293,7 +293,7 @@ class PokerBot:
         elif strength >= 5:
             choice = random.randrange(2,4)
             if choice == 3:
-                self.bet = random.randrange(2*(self.to_call + 1), 3*(self.to_call + 1))
+                self.bet = random.randrange(2*(self.to_call + 1), self.stack//5 + 1)
             return choice
         elif strength >= 4:
             return 2
@@ -313,7 +313,7 @@ class PokerBot:
         elif strength >= 5:
             choice = random.randrange(2,4)
             if choice == 3:
-                self.bet = random.randrange(2*(self.to_call + 1), 3*(self.to_call + 1))
+                self.bet = random.randrange(2*(self.to_call + 1), self.stack//5 + 1)
             return choice
         elif strength >= 4:
             return 2
@@ -333,7 +333,7 @@ class PokerBot:
         elif strength >= 5:
             choice = random.randrange(2, 4)
             if choice == 3:
-                self.bet = random.randrange(2 * (self.to_call + 1), 3 * (self.to_call + 1))
+                self.bet = random.randrange(2 * (self.to_call + 1), self.stack//5 + 1)
             return choice
         elif strength >= 4:
             return 2

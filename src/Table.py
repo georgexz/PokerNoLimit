@@ -141,6 +141,7 @@ class Table:
         self.playerList[player_i].finish_betting()
         next_index = player_i
         print("new round values: " + str(self.roundList))
+        self.no_bets()
         while self.get_number_of_turns_left() >= 1:
             next_index += 1
             while next_index >= len(self.roundList):
