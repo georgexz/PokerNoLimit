@@ -261,15 +261,15 @@ class PokerBot:
     def handle_preflop(self):
         strength = self.preflop()
         if strength >= 12:
-            if self.to_call <= self.stack/7:
-                self.bet = random.randrange(self.stack/7, self.stack/4)
+            if self.to_call <= self.stack//7:
+                self.bet = random.randrange(self.stack//6, self.stack//4)
                 return 3
-            elif self.to_call <= self.stack/2:
+            elif self.to_call <= self.stack//2:
                 return 2
             else:
                 return 4
         elif strength > 7:
-            if self.to_call < self.stack/5:
+            if self.to_call < self.stack//5:
                 return 2
             else:
                 return 1
@@ -282,9 +282,9 @@ class PokerBot:
     def handle_flop(self):
         strength = self.flop()
         if strength >= 12:
-            if self.to_call <=8:
+            if self.to_call <= self.stack//7:
                 if self.stack > 50:
-                    self.bet = random.randrange(10, 16)
+                    self.bet = random.randrange(self.stack//6, self.stack//4)
                     return 3
                 else:
                     return 4
@@ -303,12 +303,11 @@ class PokerBot:
     def handle_turn(self):
         strength = self.turn()
         if strength >= 12:
-            if self.to_call <=8:
-                if self.stack > 50:
-                    self.bet = random.randrange(10, 16)
-                    return 3
-                else:
-                    return 4
+            if self.to_call <=self.stack//7:
+                self.bet = random.randrange(self.stack//6, self.stack//4)
+                return 3
+            elif random.random() < 0.2:
+                return 4
             else:
                 return 2
         elif strength >= 5:
@@ -324,12 +323,11 @@ class PokerBot:
     def handle_river(self):
         strength = self.river()
         if strength >= 12:
-            if self.to_call <= 8:
-                if self.stack > 50:
-                    self.bet = random.randrange(10, 16)
-                    return 3
-                else:
-                    return 4
+            if self.to_call <=self.stack//7:
+                self.bet = random.randrange(self.stack//6, self.stack//4)
+                return 3
+            elif random.random() < 0.2:
+                return 4
             else:
                 return 2
         elif strength >= 5:
