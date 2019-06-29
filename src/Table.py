@@ -1,4 +1,5 @@
 from Player import *
+import numpy as np
 
 class Table:
     playerList = []
@@ -14,6 +15,7 @@ class Table:
     done = False
     actions = []
     speedRun = False
+    
 
     def __init__(self, n_players, small_blind, big_blind, ante):
         self.n_players = n_players
@@ -21,6 +23,7 @@ class Table:
         self.big_blind = big_blind
         self.ante = ante
         self.justBegun = True
+        self.track_money = np.zeros((self.n_players,), dtype=int)
 
     # description of setup
     def get_number_of_players(self):
@@ -53,6 +56,7 @@ class Table:
 
     # betting begins
     def start_round(self):
+        self.actions = []
         # preflop
         if self.justBegun:
             self.justBegun = False
@@ -64,9 +68,10 @@ class Table:
                 print("Player " + self.playerList[index].name + "'s turn.\n")
                 self.playerList[index].pot_size = self.pot
                 for s in self.sidePots:
-                    if s.playerList[index] != 1 or s.playerList[index] != -2:
+                    if s.playerList[index] != -1 or s.playerList[index] != -2:
                         self.playerList[index].side_pots.append(s.sidePot)
                 player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
+                self.track_money[index] += player_action[1]
                 self.actions.append(player_action)
                 index = self.round_continuation(index, player_action)
         # after preflop
@@ -90,6 +95,7 @@ class Table:
                     if s.playerList[index] != 1 or s.playerList[index] != -2:
                         self.playerList[index].side_pots.append(s.sidePot)
                 player_action = self.playerList[index].action(self.pot, self.toCall, self.board, self.actions)
+                self.track_money[index] += player_action[1]
                 self.actions.append(player_action)
                 index = self.round_continuation(index, player_action)
 
@@ -173,29 +179,53 @@ class Table:
 
     def check_side_pots(self, player_i, player_action):
         money = player_action[1] + self.playerList[player_i].singleRoundMoneyInThePot
+        in_money = money - self.track_money[player_i]
+
         # fold
         if player_action[0] == 0:
             for n,x in enumerate(self.sidePots):
                 self.sidePots[n].delete_from_side_pot(player_i)
+
+            while self.track_money[player_i] > 0 and self.sidePots:
+                for i, e in reversed(list(enumerate(self.sidePots))):
+                    if in_money < self.sidePots[i].to_call:
+                        self.sidePots[i].sidePot += min(self.sidePots[i].to_call - in_money, self.track_money[player_i])
+                        prev_track_money = self.track_money[player_i]
+                        self.track_money[player_i] = max(self.track_money[player_i] - self.sidePots[i].to_call + in_money, 0)
+                        in_money += prev_track_money - self.track_money[player_i]
+
         # check
         if player_action[0] == 1:
             for n,x in enumerate(self.sidePots):
                 self.sidePots[n].playerList[player_i] = 0
         # call
         elif player_action[0] == 2:
+            while self.track_money[player_i] > 0 and self.sidePots:
+                for i, e in reversed(list(enumerate(self.sidePots))):
+                    if in_money < self.sidePots[i].to_call:
+                        self.sidePots[i].sidePot += min(self.sidePots[i].to_call - in_money, self.track_money[player_i])
+                        prev_track_money = self.track_money[player_i]
+                        self.track_money[player_i] = max(self.track_money[player_i] - self.sidePots[i].to_call + in_money, 0)
+                        in_money += prev_track_money - self.track_money[player_i]
             for n, x in enumerate(self.sidePots):
-                self.sidePots[n].sidePot += self.sidePots[n].pot_add
                 self.sidePots[n].playerList[player_i] = 0
         # raise
         elif player_action[0] == 3:
             if self.sidePots:
-                self.sidePots.append(SidePot(money - self.sidePots[0].to_call, self.roundList, money))
+                self.sidePots.append(SidePot(0, self.roundList, money))
                 for n, x in enumerate(self.sidePots[-1].playerList):
                     if x == 2:
                         self.sidePots[-1].playerList[n] = -2
                 self.update_side_pots()
+
+                while self.track_money[player_i] > 0:
+                    for i, e in reversed(list(enumerate(self.sidePots))):
+                        if in_money < self.sidePots[i].to_call:
+                            self.sidePots[i].sidePot += min(self.sidePots[i].to_call - in_money, self.track_money[player_i])
+                            prev_track_money = self.track_money[player_i]
+                            self.track_money[player_i] = max(self.track_money[player_i] - self.sidePots[i].to_call + in_money, 0)
+                            in_money += prev_track_money - self.track_money[player_i]
                 for n, x in enumerate(self.sidePots):
-                    self.sidePots[n].sidePot += self.sidePots[n].pot_add
                     for m, i in enumerate(self.sidePots[n].playerList):
                         if i == 0:
                             self.sidePots[n].playerList[m] = 1
@@ -205,13 +235,20 @@ class Table:
             # assuming there are side pots, what do we do if player's all in is a raise?
             if self.sidePots:
                 if self.sidePots[0].to_call < money:
-                    self.sidePots.append(SidePot(money - self.sidePots[0].to_call, self.roundList, money))
+                    self.sidePots.append(SidePot(0, self.roundList, money))
                     for n, x in enumerate(self.sidePots[-1].playerList):
                         if x == 2:
                             self.sidePots[-1].playerList[n] = -2
                     self.update_side_pots()
+                    while self.track_money[player_i] > 0:
+                        for i, e in reversed(list(enumerate(self.sidePots))):
+                            if in_money < self.sidePots[i].to_call:
+                                self.sidePots[i].sidePot += min(self.sidePots[i].to_call - in_money, self.track_money[player_i])
+                                prev_track_money = self.track_money[player_i]
+                                self.track_money[player_i] = max(self.track_money[player_i] - self.sidePots[i].to_call + in_money, 0)
+                                in_money += prev_track_money - self.track_money[player_i]
+                for n, x in enumerate(self.sidePots):
                     for n, x in enumerate(self.sidePots):
-                        self.sidePots[n].sidePot += self.sidePots[n].pot_add
                         for m, i in enumerate(self.sidePots[n].playerList):
                             if i == 0:
                                 self.sidePots[n].playerList[m] = 1
@@ -221,49 +258,57 @@ class Table:
                 if self.sidePots[0].to_call > money:
                     print("all in not enough, exists sidepot")
                     for n, x in enumerate(self.sidePots):
+                        if x.to_call > money:
+                            self.sidePots[n].playerList[player_i] = -2
                         if x.to_call == money:
                             self.sidePots[n].playerList[player_i] = 2
-                            self.sidePots[n].sidePot += self.sidePots[n].pot_add
                             for i, e in reversed(list(enumerate(self.sidePots))):
                                 if i == n:
                                     break
                                 else:
                                     self.sidePots[i].playerList[player_i] = 2
-                                    self.sidePots[i].sidePot += self.sidePots[i].pot_add
                             break
                         if x.to_call < money:
                             for i in range(n, len(self.sidePots)):
                                 self.sidePots[i].playerList[player_i] = 2
-                                self.sidePots[i].sidePot += self.sidePots[i].pot_add
-                            self.sidePots.append(SidePot(money - self.sidePots[n].to_call, self.roundList, money))
-                            self.sidePots[n-1].pot_add = self.sidePots[n-1].to_call - self.sidePots[-1].to_call
-                            self.sidePots[n-1].sidePot = (self.sidePots[n-1].playerList.count(0) + self.sidePots[n-1]. playerList.count(2))*self.sidePots[n-1].pot_add
+                            self.sidePots.append(SidePot(0, self.roundList, money))
                             for i in range(0,n):
                                 self.sidePots[i].playerList[player_i] = -2
-                            self.sidePots[-1].sidePot += (self.sidePots[-1].playerList.count(0) + self.sidePots[-1].playerList.count(2))*(self.sidePots[-1].to_call - self.sidePots[n].to_call)
                             self.update_side_pots()
                             break
+                    while self.track_money[player_i] > 0:
+                        for i, e in reversed(list(enumerate(self.sidePots))):
+                            if in_money < self.sidePots[i].to_call:
+                                self.sidePots[i].sidePot += min(self.sidePots[i].to_call - in_money, self.track_money[player_i])
+                                prev_track_money = self.track_money[player_i]
+                                self.track_money[player_i] = max(self.track_money[player_i] - self.sidePots[i].to_call + in_money, 0)
+                                in_money += prev_track_money - self.track_money[player_i]
 
             # new side pot, no side pots before, all in is short
             else:
                 if self.toCall > money:
                     print("new sidepot")
                     self.sidePots.append(SidePot(money, self.roundList, money))
-                    self.sidePots[0].playerList[player_i] = 2
-                    self.sidePots[0].sidePot += money*(self.roundList.count(0) + self.roundList.count(2))
-                    self.sidePots.append(SidePot((self.roundList.count(0) + self.roundList.count(2))*(self.toCall - money), self.roundList, self.toCall))
+                    self.track_money[player_i] = 0
+                    in_money = money
+                    self.sidePots[0].playerList[player_i] = 2                        
+                    self.sidePots.append(SidePot(0, self.roundList, self.toCall))
                     self.sidePots[-1].playerList[player_i] = -2
-                    print("sidepots playerlists: ")
-                    for k in self.sidePots:
-                        print("sidepot")
-                        print(k.sidePot)
-                        print(str(k.playerList))
-                    sum = 0
-                    for s in self.sidePots:
-                        sum += s.sidePot
-                    if self.pot - sum > 0:
-                        self.sidePots.append(SidePot(self.pot - sum, self.roundList, 0))
+                    # sum = 0
+                    # for s in self.sidePots:
+                    #     sum += s.sidePot
+                    # if self.pot - sum > 0:
+                    #     self.sidePots.append(SidePot(self.pot - sum, self.roundList, 0))
                     self.update_side_pots()
+                    for p in range(self.n_players): 
+                        in_money = self.playerList[p].singleRoundMoneyInThePot - self.track_money[p]
+                        while self.track_money[p] > 0:
+                            for i, e in reversed(list(enumerate(self.sidePots))):
+                                if in_money < self.sidePots[i].to_call:
+                                    self.sidePots[i].sidePot += min(self.sidePots[i].to_call - in_money, self.track_money[p])
+                                    prev_track_money = self.track_money[p]
+                                    self.track_money[p] = max(self.track_money[p] - self.sidePots[i].to_call + in_money, 0)
+                                    in_money += prev_track_money - self.track_money[p]
         self.print_side_pots()
 
     def no_bets(self):
@@ -365,6 +410,7 @@ class Table:
             while index >=self.n_players:
                 index -= self.n_players
             self.playerList[index].distanceFromButton = i
+        self.check_stacks()
 
     # visual functions
     def get_player_hands(self):
@@ -397,6 +443,7 @@ class Table:
                 print("c: " + str(c))
                 self.roundList.pop(c)
                 self.n_players -= 1
+                self.track_money = self.track_money[0:self.n_players]
         for m in range(self.n_players):
             self.playerList[m].n_players = self.n_players
 
@@ -428,8 +475,19 @@ class Table:
         for x in range(0, self.n_players):
             if evaluated_hands[x] == best_score and self.roundList[x] != -1 and x != best_index:
                 same_best_hands.append(x)
-        while self.sidePots:
+        if self.pot > 0 and not self.sidePots:
+            if len(same_best_hands) > 1:
+                for o,p in enumerate(same_best_hands):
+                    self.playerList[p].stack += self.pot//len(same_best_hands)
+                    print()
+                    print(self.playerList[p].name + " takes split pot of " + str(self.pot//len(same_best_hands)) + ".")
+            else:        
+                self.playerList[best_index].stack += self.pot
+                print()
+                print(self.playerList[best_index].name + " takes the pot.")
             self.pot = 0
+
+        while self.sidePots:
             if len(same_best_hands) > 1:
                 for y, z in enumerate(self.sidePots):
                     count = 0
@@ -440,6 +498,7 @@ class Table:
                         for c, d in enumerate(z.playerList):
                             if c in same_best_hands and d != -1 and d != -2:
                                 self.playerList[c].stack += z.sidePot//count
+                                self.pot -= z.sidePot//count
                                 print(self.playerList[c].name + " wins split pot of " + str(z.sidePot//count))
                         self.sidePots.pop(y)
                         break
@@ -449,6 +508,7 @@ class Table:
                     for m, p in enumerate(x.playerList):
                         if m == best_index and p != -1 and p != -2:
                             self.playerList[best_index].stack += x.sidePot
+                            self.pot -= x.sidePot
                             print(self.playerList[best_index].name + " wins side pot of " + str(x.sidePot))
                             print("sidepot list: " + str(x.playerList))
                             remove_indices.append(n)
@@ -469,10 +529,25 @@ class Table:
             same_best_hands = []
             same_best_hands.append(best_index)
             # split pot
-            for x in range(0, self.n_players):
-                if evaluated_hands[x] == best_score and self.roundList[x] != -1 and x != best_index:
-                    same_best_hands.append(x)
-        if self.pot > 0:
+        for i in range(self.n_players):
+            evaluated_hands.append(evaluator.evaluate(self.playerList[i].hand, self.board))
+        for k in range(self.n_players):
+            if self.roundList[k] != -1:
+                best_score = evaluated_hands[k]
+                best_index = k
+                break
+        for j in range(0, self.n_players):
+            if evaluated_hands[j] < best_score and evaluated_hands[j] != 0 and self.roundList[j] != -1:
+                best_score = evaluated_hands[j]
+                best_index = j
+        evaluated_hands[best_index] = 0
+        same_best_hands = []
+        same_best_hands.append(best_index)
+        # split pot
+        for x in range(0, self.n_players):
+            if evaluated_hands[x] == best_score and self.roundList[x] != -1 and x != best_index:
+                same_best_hands.append(x)
+        if self.pot > 0 and not self.sidePots:
             if len(same_best_hands) > 1:
                 for o,p in enumerate(same_best_hands):
                     self.playerList[p].stack += self.pot//len(same_best_hands)
@@ -483,4 +558,5 @@ class Table:
                 print()
                 print(self.playerList[best_index].name + " takes the pot.")
             self.pot = 0
+
         self.check_stacks()

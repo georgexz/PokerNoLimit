@@ -28,13 +28,13 @@ class Player:
     def set_small_blind(self, small_blind):
         self.isSmallBlind = True
         self.isBigBlind = False
-        self.stack = self.stack - small_blind
+        self.stack = max(self.stack - small_blind, 0)
         self.singleRoundMoneyInThePot = small_blind
 
     def set_big_blind(self, big_blind):
         self.isSmallBlind = False
         self.isBigBlind = True
-        self.stack = self.stack - big_blind
+        self.stack = max(self.stack - big_blind, 0)
         self.singleRoundMoneyInThePot = big_blind
 
     def finish_betting(self):

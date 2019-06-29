@@ -53,6 +53,7 @@ def main():
         game.actions.clear()
         for i in range(game.n_players):
             game.playerList[i].singleRoundMoneyInThePot = 0
+            game.track_money[i] = 0
 
         if game.done:
             game.done = False
@@ -82,6 +83,7 @@ def main():
 
         for i in range(game.n_players):
             game.playerList[i].singleRoundMoneyInThePot = 0
+            game.track_money[i] = 0
 
         if game.done:
             game.done = False
@@ -110,6 +112,7 @@ def main():
 
         for i in range(game.n_players):
             game.playerList[i].singleRoundMoneyInThePot = 0
+            game.track_money[i] = 0
 
         if game.done:
             game.done = False
@@ -138,6 +141,7 @@ def main():
 
         for i in range(game.n_players):
             game.playerList[i].singleRoundMoneyInThePot = 0
+            game.track_money[i] = 0
 
         if game.done:
             game.done = False
