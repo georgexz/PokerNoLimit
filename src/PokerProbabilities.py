@@ -16,6 +16,7 @@ class PokerBot:
     side_pots = []
     to_call = 0
     actions = []
+    num_players = 0
 
     def __init__(self, hand, stack):
         self.hand = hand
@@ -55,295 +56,28 @@ class PokerBot:
         return math.ceil(score)
 
     def flop(self):
-        # check for pairs
-        strength = 0
-        pairs = []
-        board_pairs = []
-        for c in itertools.combinations(self.hand + self.board, 2):
-            if PokerProbabilities.same_rank(c):
-                pairs.append(Card.get_rank_int(c[0]))
-        for cb in itertools.combinations(self.hand + self.board, 2):
-            if PokerProbabilities.same_rank(cb):
-                board_pairs.append(Card.get_rank_int(cb[0]))
-        board_three = -1
-        if PokerProbabilities.same_rank(self.board):
-            board_three = Card.get_rank_int(self.board[0])
-        three_of_a_kind = -1
-        for ci in itertools.combinations(self.hand + self.board, 3):
-            if PokerProbabilities.same_rank(ci):
-                three_of_a_kind = Card.get_rank_int(ci[0])
-        four_of_a_kind = -1
-        if PokerProbabilities.same_rank(self.hand):
-            for cf in itertools.combinations(self.board, 2):
-                if PokerProbabilities.same_rank(cf):
-                    if Card.get_rank_int(cf[0]) == Card.get_rank_int(self.hand[0]):
-                        four_of_a_kind = Card.get_rank_int(cf[0])
-
-        if four_of_a_kind != -1:
-            strength = 20
-            return strength
-        if four_of_a_kind == -1 and three_of_a_kind != -1:
-            strength = 8
-            return strength
-        if PokerProbabilities.is_straight_flush(self.hand + self.board):
-            strength = 25
-            return strength
-        if PokerProbabilities.is_straight(self.hand + self.board):
-            strength = 12
-            return strength
-        if PokerProbabilities.is_flush(self.hand + self.board):
-            strength = 15
-            return strength
-        if PokerProbabilities.is_full_house(self.hand + self.board):
-            strength = 18
-            return strength
-        if board_three == -1 and three_of_a_kind == -1 and pairs:
-            pairs.sort(reverse=True)
-            # if pairs are in your hand
-            for s in self.hand:
-                for i, p in enumerate(pairs):
-                    if Card.get_rank_int(s) == p:
-                        if i == 0:
-                            if p >= PokerProbabilities.highest_card(self.board):
-                                strength += 5  # likely top pair
-                            else:
-                                strength += 4  # low pair
-                        if i == 1:
-                            strength += 2  # two pair
-            return strength
-        if not pairs:
-            if PokerProbabilities.highest_card(self.hand) > PokerProbabilities.highest_card(self.board):
-                strength = 2
-            else:
-                strength = 1
-            return strength
-        # contemplate three of a kind possibilities for other players affecting strength of your hand
-
-
+        
     def turn(self):
-        strength = 0
-        pairs = []
-        board_pairs = []
-        for c in itertools.combinations(self.hand + self.board, 2):
-            if PokerProbabilities.same_rank(c):
-                pairs.append(Card.get_rank_int(c[0]))
-        for cb in itertools.combinations(self.hand + self.board, 2):
-            if PokerProbabilities.same_rank(cb):
-                board_pairs.append(Card.get_rank_int(cb[0]))
-        board_three = -1
-        for cn in itertools.combinations(self.board, 3):
-            if PokerProbabilities.same_rank(self.board):
-                board_three = Card.get_rank_int(cn[0])
-        three_of_a_kind = -1
-
-        for ci in itertools.combinations(self.hand + self.board, 3):
-            if PokerProbabilities.same_rank(ci):
-                three_of_a_kind = Card.get_rank_int(ci[0])
-        four_of_a_kind = -1
-        if PokerProbabilities.same_rank(self.hand):
-            for cf in itertools.combinations(self.board, 2):
-                if PokerProbabilities.same_rank(cf):
-                    if Card.get_rank_int(cf[0]) == Card.get_rank_int(self.hand[0]):
-                        four_of_a_kind = Card.get_rank_int(cf[0])
-
-        if four_of_a_kind != -1:
-            strength = 20
-            return strength
-        if four_of_a_kind == -1 and three_of_a_kind != -1:
-            strength = 8
-            return strength
-        for cm in itertools.combinations(self.hand + self.board, 5):
-            if PokerProbabilities.is_straight_flush(cm):
-                strength = 25
-                return strength
-        for cp in itertools.combinations(self.hand + self.board, 5):
-            if PokerProbabilities.is_straight(cp):
-                strength = 12
-                return strength
-        for d in itertools.combinations(self.hand + self.board, 5):
-            if PokerProbabilities.is_flush(d):
-                strength = 15
-                return strength
-        for v in itertools.combinations(self.hand + self.board, 5):
-            if PokerProbabilities.is_full_house(v):
-                strength = 18
-                return strength
-        if board_three == -1 and three_of_a_kind == -1 and pairs:
-            pairs.sort(reverse=True)
-            # if pairs are in your hand
-            for s in self.hand:
-                for i, p in enumerate(pairs):
-                    if Card.get_rank_int(s) == p:
-                        if i == 0:
-                            if p >= PokerProbabilities.highest_card(self.board):
-                                strength += 5  # likely top pair
-                            else:
-                                strength += 4  # low pair
-                        if i == 1:
-                            strength += 2  # two pair
-            return strength
-        if not pairs:
-            if PokerProbabilities.highest_card(self.hand) > PokerProbabilities.highest_card(self.board):
-                strength = 2
-            else:
-                strength = 1
-            return strength
 
     def river(self):
-        strength = 0
-        pairs = []
-        board_pairs = []
-        for c in itertools.combinations(self.hand + self.board, 2):
-            if PokerProbabilities.same_rank(c):
-                pairs.append(Card.get_rank_int(c[0]))
-        for cb in itertools.combinations(self.hand + self.board, 2):
-            if PokerProbabilities.same_rank(cb):
-                board_pairs.append(Card.get_rank_int(cb[0]))
-        board_three = -1
-        for cn in itertools.combinations(self.board, 3):
-            if PokerProbabilities.same_rank(self.board):
-                board_three = Card.get_rank_int(cn[0])
-        three_of_a_kind = -1
-
-        for ci in itertools.combinations(self.hand + self.board, 3):
-            if PokerProbabilities.same_rank(ci):
-                three_of_a_kind = Card.get_rank_int(ci[0])
-        four_of_a_kind = -1
-        if PokerProbabilities.same_rank(self.hand):
-            for cf in itertools.combinations(self.board, 2):
-                if PokerProbabilities.same_rank(cf):
-                    if Card.get_rank_int(cf[0]) == Card.get_rank_int(self.hand[0]):
-                        four_of_a_kind = Card.get_rank_int(cf[0])
-
-        if four_of_a_kind != -1:
-            strength = 20
-            return strength
-        if four_of_a_kind == -1 and three_of_a_kind != -1:
-            strength = 8
-            return strength
-        for cm in itertools.combinations(self.hand + self.board, 5):
-            if PokerProbabilities.is_straight_flush(cm):
-                strength = 25
-                return strength
-        for cp in itertools.combinations(self.hand + self.board, 5):
-            if PokerProbabilities.is_straight(cp):
-                strength = 12
-                return strength
-        for d in itertools.combinations(self.hand + self.board, 5):
-            if PokerProbabilities.is_flush(d):
-                strength = 15
-                return strength
-        for v in itertools.combinations(self.hand + self.board, 5):
-            if PokerProbabilities.is_full_house(v):
-                strength = 18
-                return strength
-        if board_three == -1 and three_of_a_kind == -1 and pairs:
-            pairs.sort(reverse=True)
-            # if pairs are in your hand
-            for s in self.hand:
-                for i, p in enumerate(pairs):
-                    if Card.get_rank_int(s) == p:
-                        if i == 0:
-                            if p >= PokerProbabilities.highest_card(self.board):
-                                strength += 5  # likely top pair
-                            else:
-                                strength += 4  # low pair
-                        if i == 1:
-                            strength += 2  # two pair
-            return strength
-        if not pairs:
-            if PokerProbabilities.highest_card(self.hand) > PokerProbabilities.highest_card(self.board):
-                strength = 2
-            else:
-                strength = 1
-            return strength
 
     def handle_preflop(self):
         strength = self.preflop()
-        if strength >= 12:
-            if self.to_call <= 8:
-                if self.stack > 50:
-                    self.bet = random.randrange(10, 16)
-                    return 3
-                else:
-                    return 4
-            else:
-                return 2
-        elif strength > 7:
-            if self.to_call < self.stack/5:
-                return 2
-            else:
-                return 1
-        else:
-            if self.to_call < 4 and self.stack > self.to_call*10:
-                return 1
-            else:
-                return 1
 
     def handle_flop(self):
         strength = self.flop()
-        if strength >= 12:
-            if self.to_call <=8:
-                if self.stack > 50:
-                    self.bet = random.randrange(10, 16)
-                    return 3
-                else:
-                    return 4
-            else:
-                return 2
-        elif strength >= 5:
-            choice = random.randrange(2,4)
-            if choice == 3:
-                self.bet = random.randrange(2*(self.to_call + 1), 3*(self.to_call + 1))
-            return choice
-        elif strength >= 4:
-            return 2
-        else:
-            return 1
 
     def handle_turn(self):
         strength = self.turn()
-        if strength >= 12:
-            if self.to_call <=8:
-                if self.stack > 50:
-                    self.bet = random.randrange(10, 16)
-                    return 3
-                else:
-                    return 4
-            else:
-                return 2
-        elif strength >= 5:
-            choice = random.randrange(2,4)
-            if choice == 3:
-                self.bet = random.randrange(2*(self.to_call + 1), 3*(self.to_call + 1))
-            return choice
-        elif strength >= 4:
-            return 2
-        else:
-            return 1
 
     def handle_river(self):
         strength = self.river()
-        if strength >= 12:
-            if self.to_call <= 8:
-                if self.stack > 50:
-                    self.bet = random.randrange(10, 16)
-                    return 3
-                else:
-                    return 4
-            else:
-                return 2
-        elif strength >= 5:
-            choice = random.randrange(2, 4)
-            if choice == 3:
-                self.bet = random.randrange(2 * (self.to_call + 1), 3 * (self.to_call + 1))
-            return choice
-        elif strength >= 4:
-            return 2
-        else:
-            return 1
+        
 
 class PokerProbabilities:
+    @staticmethod
+    def calculate_hand_probability(cards):
+        
     @staticmethod
     def highest_card(cards):
         rank = Card.get_rank_int(cards[0])

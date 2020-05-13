@@ -56,6 +56,7 @@ class Player:
             self.pokerBot.side_pots = self.side_pots
             self.pokerBot.to_call = to_call_amount
             self.pokerBot.actions = actions
+            self.pokerBot.num_players = self.n_players
             if not board:
                 decision = self.pokerBot.handle_preflop()
             if len(board) == 3:
@@ -113,6 +114,9 @@ class Player:
         print("last action after all in: " + str(self.lastAction))
         self.stack = 0
         return 4
+        
+    def get_last_action(self):
+        return self.lastAction
 
     def wins_hand(self, pot):
         self.stack = self.stack + pot

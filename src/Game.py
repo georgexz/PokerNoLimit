@@ -8,13 +8,18 @@ def main():
     ante = int(input("Ante: "))
     deck = Deck()
     game = Table(number_of_players, small_blind, big_blind, ante)
+    game.set_allins(number_of_players)
 
     for i in range(number_of_players):
         stack_size = int(input("Stack size for player " + str(i) + ": "))
         game.playerNames.append(input("Name: "))
         game.set_player_stack(stack_size)
 
-    for n in range(100):
+    for n in range(400):
+        game.justBegun = True
+        game.sidePots.clear()
+        game.sum_of_sidePots.clear()
+        print("New Round List: " + str(game.roundList))
         if len(game.playerList) == 1:
             print()
             print("Winner is " + game.playerList[0].name)
@@ -45,7 +50,7 @@ def main():
         for player in game.playerList:
             if player.name != "Me":
                 player.pokerBot.stackList = game.playerStackList
-        game.start_round()
+        game.start_round(0)
         game.actions.clear()
         for i in range(game.n_players):
             game.playerList[i].singleRoundMoneyInThePot = 0
@@ -64,7 +69,7 @@ def main():
         for player in game.playerList:
             if player.name != "Me":
                 player.pokerBot.stackList = game.playerStackList
-        game.start_round()
+        game.start_round(1)
         game.actions.clear()
 
         for i in range(game.n_players):
@@ -81,11 +86,12 @@ def main():
         for n, stack in enumerate(game.get_player_stack_sizes()):
             print("Stack for " + str(stack[1]) + " is " + str(stack[0]))
 
+
         for player in game.playerList:
             if player.name != "Me":
                 player.pokerBot.stackList = game.playerStackList
 
-        game.start_round()
+        game.start_round(2)
         game.actions.clear()
 
         for i in range(game.n_players):
@@ -106,7 +112,7 @@ def main():
             if player.name != "Me":
                 player.pokerBot.stackList = game.playerStackList
 
-        game.start_round()
+        game.start_round(3)
         game.actions.clear()
 
         for i in range(game.n_players):
@@ -118,6 +124,10 @@ def main():
             continue
 
         game.give_winnings()
+        total = 0
+        for n, stack in enumerate(game.get_player_stack_sizes()):
+             total += stack[0]
+        print("Total Amount: " + str(total))
 
         if game.done:
             game.board.clear()
